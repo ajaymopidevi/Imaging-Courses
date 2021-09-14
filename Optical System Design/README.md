@@ -10,5 +10,5 @@ As part of capstone project, I have designed a zoom optical lens system.<br />
 Report:<br />
 1. Frst Order Design<br />
 2. Singlet amd Doublet Lens design <br />
-<br />
-I used [OpticStudio](https://www.zemax.com/pages/opticstudio) software by Zemax for designing the optical system.
+
+I used ![OpticStudio](https://www.zemax.com/pages/opticstudio) software by Zemax for designing the optical system.
