@@ -23,9 +23,9 @@ def domain_kernel(l=3, sig=1.):
 
 	return kernel/np.sum(kernel)
 
-def bilateralFilter(img1, img2, dsig=28,rsig=30):
+def bilateralFilter(img1, img2, dsig=5.0,rsig=20.0):
 	img_shape = img1.shape
-	kernel_size = 9
+	kernel_size = 7
 	k = kernel_size//2
 	transform_img = np.zeros(img_shape)
 	domain_filter = domain_kernel(kernel_size,dsig)
@@ -45,10 +45,7 @@ def bilateralFilter(img1, img2, dsig=28,rsig=30):
 				kernel = np.multiply(range_filter, domain_filter)
 				patch_blur = np.multiply(patch1, kernel)
 
-
 				transform_img[i-k, j-k, c] = np.sum(patch_blur)/np.sum(kernel)
-
-
 
 	return transform_img
 
@@ -72,16 +69,9 @@ e = 0.02
 F_detail = (F + e)/(F_base + e)
 cv2.imwrite('F_detail.png',F_detail)
 
-Flin = cv2.cvtColor(F, cv2.COLOR_BGR2GRAY)
-Alin = cv2.cvtColor(A, cv2.COLOR_BGR2GRAY)
-M = (Flin - Alin )>10
+M = (F - A )<50
 cv2.imwrite('M.png',M*255)
-mask = np.zeros(F.shape)
-mask[:,:,0] = M
-mask[:,:,1] = M
-mask[:,:,2] = M
 
-M = mask
 A_final = ((1-M)* A_NR *F_detail) + (M*A_base)
 cv2.imwrite('A_final.png',A_final)
 print("Done")
