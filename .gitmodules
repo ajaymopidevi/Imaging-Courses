@@ -1,0 +1,6 @@
+[submodule "Computer Vision/Computer"]
+	path = Computer Vision/Computer
+	url = https://github.com/ajaynarasimha/3DReconstruction
+[submodule "Computer Vision/3DReconstruction"]
+	path = Computer Vision/3DReconstruction
+	url = https://github.com/ajaynarasimha/3DReconstruction
