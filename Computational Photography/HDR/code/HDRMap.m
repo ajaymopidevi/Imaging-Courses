@@ -8,7 +8,7 @@ function imgHDR = HDRMap(simages, g, ln_t, w)
             for j = 1:width;
                 wij = 0;
                 lEg = 0;
-                for k = 1:8:numPics;
+                for k = 1:numPics;
                     idx = simages{k}(i,j,c)+1;
                     lE = g{c}(idx) - ln_t(k);
                     lEg = w(idx)*lE + lEg;
@@ -19,7 +19,6 @@ function imgHDR = HDRMap(simages, g, ln_t, w)
                 imgHDR3(i,j,c) = lEg;
                 
             end
-            disp(i);
         end
     end
 
@@ -32,6 +31,6 @@ function imgHDR = HDRMap(simages, g, ln_t, w)
         imgHDR(:,:,c) = imgHDR(:,:,c)/minP;
     end
     
-    save('imgHDR.mat','imgHDR');
+    %save('imgHDR.mat','imgHDR');
     
  end 
