@@ -5,7 +5,6 @@
 %   folder: the (relative) path containing the image set.
 %   lambda: smoothness factor for gsolve.
 %   [srow scol]: the dimension of the resized image for sampling in gsolve.
-%   prefix: output LDR's prefix
 %
 function main(folder, alpha_, white_, lambda, prefix, srow, scol)
 
@@ -16,16 +15,6 @@ function main(folder, alpha_, white_, lambda, prefix, srow, scol)
     end
     if( ~exist('lambda') )
 	      lambda = 1;
-    end
-    if( ~exist('alpha_') )
-	      alpha_ = 0.18;
-    end
-    if( ~exist('white_') )
-	      white_ = 3;
-    end
-    if( ~exist('prefix') )
-	      tokens = strsplit('/', folder);
-	      prefix = char(tokens(end));
     end
     
     pkg load image
@@ -38,16 +27,22 @@ function main(folder, alpha_, white_, lambda, prefix, srow, scol)
     height = size(simages{1},1);
     numPixels = 50;
     numPics = length(simages);
-    for i=1:numPixels;
-        x = randi(width*0.3);
-        y = randi(height*0.3);
-        for j=1:numPics;
-            img = imresize(simages{j},0.3);
-            Zr(i,j) = img(y,x,1);
-            Zg(i,j) = img(y,x,2);
-            Zb(i,j) = img(y,x,3);
+    for i =1:numPixels
+      w = width*0.3;
+      h = height*0.3;
+      x(i) = randi(w);
+      y(i) = randi(h);
+    endfor
+    for j=1:numPics;
+        image = simages{j};
+        img = imresize(image,0.3);
+        for i=1:numPixels;
+            Zr(i,j) = img(y(i),x(i),1);
+            Zg(i,j) = img(y(i),x(i),2);
+            Zb(i,j) = img(y(i),x(i),3);
         end
     end
+    
     ln_t = log(exposures);
 
     
@@ -62,45 +57,26 @@ function main(folder, alpha_, white_, lambda, prefix, srow, scol)
     
     t = cputime
     disp('Generate HDR');
-    %imgHDR = hdrDebevec(simages, g, ln_t, w);
-    height = size(simages{1},1);
-    width = size(simages{1},2);   
-    hdrImg = zeros(height,width,3);
-    for c = 1:3;
-        for i = 1:height;
-            for j = 1:width;
-                wij = 0;
-                lEg = 0;
-                for k = 1:numPics;
-                    lE = g{c}(simages{k}(i,j,c)+1) - ln_t(k);
-                    lEg = w(simages{k}(i,j,c)+1)*lE + lEg;
-                    wij = wij + w(simages{k}(i,j,c)+1); 
-                end
-                lEg = lEg/wij;
-                hdrImg(i,j,c) = exp(lEg);
-                hdrImg3(i,j,c) = lEg;
-                %disp(j);
-            end
-            disp(i);
-        end
+  	imgHDR = HDRMap(simages, g, ln_t, w);
+    t = cputime -t
+    
+    lightness = [ 0.06, 0.08, 0.1, 0.12,0.14]; 
+    for num = 1 : size(lightness,2);
+      mapImg = zeros(height, width, 3);
+      for c = 1:3;
+        hdrI = imgHDR(:,:,c);
+        mapImg(:,:,c) = toneMapping(hdrI,lightness(num));
+      end
+      max(max(mapImg));
+      min(min(mapImg));
+      mapImg = round(mapImg*256);
+      mapImg = uint8(mapImg);
+      figure;
+      imshow(mapImg)
+      output_name = [ 'imgHDR_' num2str(lightness(num)) '.bmp' ];
+      imwrite(mapImg, output_name);
     end
 
-    %% for histogram picture
-    hdrImgG = hdrImg3(:,:,2);
-    imshow(hdrImgG);
-    imgHDR = hdrImg;
-    save('imgHDR.mat','imgHDR');
-    t = cputime -t
-
-    write_rgbe(imgHDR, [prefix '.hdr']);
-    disp('constructing HDR radiance map.');
-    
-    %load('imgHDR.mat');
-    imgTMO = tmoReinhard02(imgHDR, 'global', alpha_, 1e-6, white_);
-    save('imgTMO.mat', 'imgTMO');
-    disp('saving Final Tone mapped image');
-    write_rgbe(imgTMO, [prefix '_tone_mapped.hdr']);
-    imwrite(imgTMO, [prefix '_tone_mapped.png']);
 
     disp('done!');
     
